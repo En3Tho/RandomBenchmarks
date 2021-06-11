@@ -163,7 +163,7 @@ module ISeq =
         while SEnumerator.moveNext &enum do
             let value = SEnumerator.current enum
             let comparable = map value
-            if mapping < comparable then
+            if mapping > comparable then
                 result <- value
                 mapping <- comparable
         result
@@ -182,6 +182,13 @@ module ISeq =
             |> Some
         else
             None
+
+    let inline toResizeArray seq =
+        let mutable enum = seq
+        let rsz = ResizeArray()
+        while SEnumerator.moveNext &enum do
+            SEnumerator.current enum |> rsz.Add
+        rsz
 
     let inline map2 map seq =
         { Enumerator = SEnumerator.getEnumerator seq; Map = map }
