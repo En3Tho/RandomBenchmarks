@@ -8,7 +8,8 @@
     <ItemGroup>
         <Compile Include="Core.fs" />
         <Compile Include="GenericEnumerators.fs" />
-        <Compile Include="InlineEnumeratorsImlp.fs" />
+        <Compile Include="InlineShapeEnumeratorsImpl.fs" />
+        <Compile Include="ValueOptionEnumerators.fs" />
     </ItemGroup>
 
 </Project>

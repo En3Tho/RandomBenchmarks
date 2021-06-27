@@ -5,7 +5,7 @@ open System.Runtime.CompilerServices
 
 module GenericEnumeratorsImpl =
     type SEnum<'i, 'e when 'e: struct
-                   and 'e :> IEnumerator<'i>> = 'e
+                       and 'e :> IEnumerator<'i>> = 'e
 
     [<Struct; NoComparison; NoEquality>]
     type GSelectEnumerator<'i, 'res, 'e when 'e: struct

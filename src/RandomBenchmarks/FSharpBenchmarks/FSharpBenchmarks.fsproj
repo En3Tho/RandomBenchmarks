@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Compile Include="EnumeratorBenchmarks.fs" />
+        <Compile Include="NestedFuncCodeGenBenchmark.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 

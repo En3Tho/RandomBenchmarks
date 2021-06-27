@@ -6,14 +6,14 @@ open BenchmarkDotNet.Jobs
 
 open Lib.FSharp.GenericEnumerators
 open Lib.FSharp.InlineEnumerators
+open Lib.FSharp.ValueOptionEnumerators
 
 module Helpers =
     let createArray() = [|
-           for i = 0 to 3 do
-                for j = 0 to 99 do
-                    $"{i}, {j}"
-        |]
-
+       for i = 0 to 3 do
+            for j = 0 to 99 do
+                $"{i}, {j}"
+    |]
 
 [<DisassemblyDiagnoser>]
 [<MemoryDiagnoser>]
@@ -36,14 +36,14 @@ type EnumeratorBenchmarks() =
     let strLen (_, x: string) = x.Length
 
     [<Benchmark>]
-    member _.ArrayFind() =
+    member _.SeqArrayIndexedMinBy() =
         array
         |> Seq.indexed
         |> Seq.minBy strLen
         |> fst
 
     [<Benchmark>]
-    member _.SArrayFind() =
+    member _.ISeqArrayRefIndexedMinBy() =
         array
         |> ISeq.ofArray
         |> ISeq.refIndexed
@@ -51,7 +51,15 @@ type EnumeratorBenchmarks() =
         |> fst
 
     [<Benchmark>]
-    member _.SValueArrayFindExplicit() =
+    member _.VOSeqArrayRefIndexedMinBy() =
+        array
+        |> VOSeq.ofArray
+        |> VOSeq.refIndexed
+        |> VOSeq.minBy strLen
+        |> fst
+
+    [<Benchmark>]
+    member _.ISeqArrayIndexedMinBy() =
         array
         |> ISeq.ofArray
         |> ISeq.indexed
@@ -59,15 +67,15 @@ type EnumeratorBenchmarks() =
         |> valuefst
 
     [<Benchmark>]
-    member _.SValueArrayFind() =
+    member _.VOSeqArrayIndexedMinBy() =
         array
-        |> ISeq.ofArray
-        |> ISeq.indexed
-        |> ISeq.minBy valueStrLen
+        |> VOSeq.ofArray
+        |> VOSeq.indexed
+        |> VOSeq.minBy valueStrLen
         |> valuefst
   
     [<Benchmark>]
-    member _.ForArrayFind() =
+    member _.ExplicitArrayFind() =
         let mutable value = array.[0]
         let mutable resultIndex = 0
         for i = 1 to array.Length - 1 do
@@ -77,53 +85,53 @@ type EnumeratorBenchmarks() =
         resultIndex
 
     [<Benchmark>]
-    member _.CListSeqIter1() =
+    member _.SeqListFilterIter() =
         list
         |> Seq.filter containsZero
         |> Seq.iter ignore
 
     [<Benchmark>]
-    member _.CListSeqIter2() =
+    member _.SeqListFilterFilterIter() =
         list
         |> Seq.filter containsOne
         |> Seq.filter containsZero
         |> Seq.iter ignore
 
     [<Benchmark>]
-    member _.CListSSeqIter1() =
+    member _.ISeqListFilterIter() =
         list
         |> ISeq.filter containsZero
         |> ISeq.iter ignore
 
     [<Benchmark>]
-    member _.CListSSeqIter2() =
+    member _.ISeqListFilterFilterIter() =
         list
         |> ISeq.filter containsOne
         |> ISeq.filter containsZero
         |> ISeq.iter ignore
 
     [<Benchmark>]
-    member _.CListSSeqIter12() =
+    member _.ISeqListFilter2Iter() =
         list
         |> ISeq.filter2 containsZero
         |> ISeq.iter ignore
 
     [<Benchmark>]
-    member _.CListSSeqIter22() =
+    member _.ISeqLustFilter2Filter2Iter() =
         list
         |> ISeq.filter2 containsOne
         |> ISeq.filter2 containsZero
         |> ISeq.iter ignore
 
     [<Benchmark>]
-    member _.CListGSeqIter1() =
+    member _.GSeqListFilterIter() =
         list
         |> GSeq.getEnumerator
         |> GSeq.filter containsZero
         |> GSeq.iter ignore
 
     [<Benchmark>]
-    member _.CListGSeqIter2() =
+    member _.GSeqFilterFilterIter() =
         list
         |> GSeq.getEnumerator
         |> GSeq.filter containsOne
@@ -131,7 +139,7 @@ type EnumeratorBenchmarks() =
         |> GSeq.iter ignore
 
     [<Benchmark>]
-    member _.CListRawIter1() =
+    member _.ExplicitListFilterFilterIter() =
         let mutable enumerator = list.GetEnumerator()
         while enumerator.MoveNext() do
         if containsOne enumerator.Current
@@ -139,27 +147,34 @@ type EnumeratorBenchmarks() =
                ignore enumerator.Current
 
     [<Benchmark>]
-    member _.ArraySeqIter1() =
+    member _.SeqArrayFilterIter() =
         array
         |> Seq.filter containsZero
         |> Seq.iter ignore
 
     [<Benchmark>]
-    member _.ArraySeqIter2() =
+    member _.SeqArrayFilterFilterIter() =
         array
         |> Seq.filter containsOne
         |> Seq.filter containsZero
         |> Seq.iter ignore
 
     [<Benchmark>]
-    member _.ArrayISeqIter1() =
+    member _.ISeqArrayFilterIter() =
         array
         |> ISeq.ofArray
         |> ISeq.filter containsZero
         |> ISeq.iter ignore
 
     [<Benchmark>]
-    member _.ArrayISeqIter2() =
+    member _.VOSeqArrayFilterIter() =
+        array
+        |> VOSeq.ofArray
+        |> VOSeq.filter containsZero
+        |> VOSeq.iter ignore
+
+    [<Benchmark>]
+    member _.ISeqArrayFilterFilterIter() =
         array
         |> ISeq.ofArray
         |> ISeq.filter containsOne
@@ -167,7 +182,15 @@ type EnumeratorBenchmarks() =
         |> ISeq.iter ignore
 
     [<Benchmark>]
-    member _.ArrayISeqIter3() =
+    member _.VOSeqArrayFilterFilterIter() =
+        array
+        |> VOSeq.ofArray
+        |> VOSeq.filter containsOne
+        |> VOSeq.filter containsZero
+        |> VOSeq.iter ignore
+
+    [<Benchmark>]
+    member _.ISeqArrayFilterFilterFilterIter() =
         array
         |> ISeq.ofArray
         |> ISeq.filter containsOne
@@ -176,14 +199,30 @@ type EnumeratorBenchmarks() =
         |> ISeq.iter ignore
 
     [<Benchmark>]
-    member _.ArrayISeqIter12() =
+    member _.VOSeqArrayFilterFilterFilterIter() =
+        array
+        |> VOSeq.ofArray
+        |> VOSeq.filter containsOne
+        |> VOSeq.filter containsZero
+        |> VOSeq.filter containsTwo
+        |> VOSeq.iter ignore
+
+    [<Benchmark>]
+    member _.ISeqArrayFilter2Iter() =
         array
         |> ISeq.ofArray
         |> ISeq.filter2 containsZero
         |> ISeq.iter ignore
 
     [<Benchmark>]
-    member _.ArrayISeqIter22() =
+    member _.VOSeqArrayFilter2Iter() =
+        array
+        |> VOSeq.ofArray
+        |> VOSeq.filter2 containsZero
+        |> VOSeq.iter ignore
+
+    [<Benchmark>]
+    member _.ISeqArrayFilter2Filter2Iter() =
         array
         |> ISeq.ofArray
         |> ISeq.filter2 containsOne
@@ -191,7 +230,15 @@ type EnumeratorBenchmarks() =
         |> ISeq.iter ignore
 
     [<Benchmark>]
-    member _.ArrayISeqIter32() =
+    member _.VOSeqArrayFilter2Filter2Iter() =
+        array
+        |> VOSeq.ofArray
+        |> VOSeq.filter2 containsOne
+        |> VOSeq.filter2 containsZero
+        |> VOSeq.iter ignore
+
+    [<Benchmark>]
+    member _.ISeqArrayFilter2Filter2Filter2Iter() =
         array
         |> ISeq.ofArray
         |> ISeq.filter2 containsOne
@@ -200,14 +247,23 @@ type EnumeratorBenchmarks() =
         |> ISeq.iter ignore
 
     [<Benchmark>]
-    member _.ArrayGSeqIter1() =
+    member _.VOSeqArrayFilter2Filter2Filter2Iter() =
+        array
+        |> VOSeq.ofArray
+        |> VOSeq.filter2 containsOne
+        |> VOSeq.filter2 containsZero
+        |> VOSeq.filter2 containsTwo
+        |> VOSeq.iter ignore
+
+    [<Benchmark>]
+    member _.GSeqArrayFilterIter() =
         array
         |> GSeq.ofArray
         |> GSeq.filter containsZero
         |> GSeq.iter ignore
 
     [<Benchmark>]
-    member _.ArrayGSeqIter2() =
+    member _.GSeqArrayFilterFilterIter() =
         array
         |> GSeq.ofArray
         |> GSeq.filter containsOne
@@ -215,7 +271,7 @@ type EnumeratorBenchmarks() =
         |> GSeq.iter ignore
 
     [<Benchmark>]
-    member _.ArrayGSeqIter3() =
+    member _.GSeqArrayFilterFilterFilterIter() =
         array
         |> GSeq.ofArray
         |> GSeq.filter containsOne
@@ -224,18 +280,18 @@ type EnumeratorBenchmarks() =
         |> GSeq.iter ignore
 
     [<Benchmark>]
-    member _.ArrayFor() =
+    member _.ExplicitArrayFilterFilterIter() =
         for i in array do
             if containsOne i && containsZero i then ignore i
 
     [<Benchmark>]
-    member _.ArrayFor2() =
+    member _.ExplicitArrayFilterFilterIter_2() =
         for i = 0 to array.Length - 1 do
             let i = array.[i]
             if containsOne i && containsZero i then ignore i
 
     [<Benchmark>]
-    member _.ArrayEnumeratorFor() =
+    member _.ExplicitGSeqArrayFilterFilterIter() =
         let mutable enum = array |> GSeq.ofArray
         while enum.MoveNext() do
             let i = enum.Current

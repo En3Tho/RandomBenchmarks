@@ -3,7 +3,7 @@
 open System.Collections.Generic
 open Lib.FSharp.Core
 
-module InlineEnumeratorsImlp =
+module InlineShapeEnumeratorsImpl =
     type SEnumerator< ^a, ^b when ^a: struct
                           and ^a: (member Current: ^b)
                           and ^a: (member MoveNext: unit -> bool)> = ^a
@@ -136,7 +136,7 @@ module InlineEnumeratorsImlp =
             enum
 
 module ISeq =
-    open InlineEnumeratorsImlp
+    open InlineShapeEnumeratorsImpl
     let inline iter f seq =
         let mutable enum = seq
         while SEnumerator.moveNext &enum do
