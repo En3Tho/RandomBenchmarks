@@ -1,3 +1,4 @@
-﻿module Lib.FSharp.Core
+﻿[<AutoOpen>]
+module Lib.FSharp.Core
 
 let inline (^) f x = f x

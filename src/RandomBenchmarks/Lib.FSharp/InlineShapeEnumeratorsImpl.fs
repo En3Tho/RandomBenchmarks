@@ -10,7 +10,7 @@ module InlineShapeEnumeratorsImpl =
 
     module SEnumerator =
         let inline current enumerator = (^a: (member Current: ^b) enumerator)
-        let inline moveNext (enumerator: ^a byref) = (^a: (member MoveNext: unit -> bool) enumerator)
+        let inline moveNext enumerator = (^a: (member MoveNext: unit -> bool) enumerator)
         let inline getEnumerator enumerator = (^a: (member GetEnumerator: unit -> SEnumerator<_,_>) enumerator)
         let inline getIEnumerator enumerator = (^a: (member GetEnumerator: unit -> IEnumerator<_>) enumerator)
 
@@ -30,7 +30,7 @@ module InlineShapeEnumeratorsImpl =
     } with
         member inline this.MoveNext() =
             let mutable found = false
-            while not found && SEnumerator.moveNext &this.Enumerator do
+            while not found && SEnumerator.moveNext this.Enumerator do
                 found <- this.Enumerator |> SEnumerator.current |> this.Filter
             found
         member inline this.Current = this.Enumerator |> SEnumerator.current
@@ -49,7 +49,7 @@ module InlineShapeEnumeratorsImpl =
 
         member inline this.MoveNext() =
             let mutable found = false
-            while not found && SEnumerator.moveNext &this.enumerator do
+            while not found && SEnumerator.moveNext this.enumerator do
                 found <- this.enumerator |> SEnumerator.current |> this.filter
             found
 
@@ -70,7 +70,7 @@ module InlineShapeEnumeratorsImpl =
         mutable Enumerator: SEnumerator< ^a, ^b>
         Map: ^b -> ^c
     } with
-        member inline this.MoveNext() = SEnumerator.moveNext &this.Enumerator
+        member inline this.MoveNext() = SEnumerator.moveNext this.Enumerator
 
         member inline this.Current = this.Enumerator |> SEnumerator.current |> this.Map
 
@@ -85,7 +85,7 @@ module InlineShapeEnumeratorsImpl =
     } with
         member inline this.MoveNext() =
             this.Index <- this.Index + 1
-            SEnumerator.moveNext &this.Enumerator
+            SEnumerator.moveNext this.Enumerator
         member inline this.Current = struct (this.Index, this.Enumerator |> SEnumerator.current)
         member inline this.Dispose() = ()
         member inline this.GetEnumerator() = this
@@ -99,7 +99,7 @@ module InlineShapeEnumeratorsImpl =
     } with
         member inline this.MoveNext() =
             this.Index <- this.Index + 1
-            SEnumerator.moveNext &this.Enumerator
+            SEnumerator.moveNext this.Enumerator
         member inline this.Current = (this.Index, this.Enumerator |> SEnumerator.current)
         member inline this.Dispose() = ()
         member inline this.GetEnumerator() = this
@@ -123,7 +123,7 @@ module InlineShapeEnumeratorsImpl =
         val mutable enumerator: SEnumerator< ^a, ^b>
         val mutable map: ^b -> ^c
 
-        member inline this.MoveNext() = SEnumerator.moveNext &this.enumerator
+        member inline this.MoveNext() = SEnumerator.moveNext this.enumerator
 
         member inline this.Current = this.enumerator |> SEnumerator.current |> this.map
 
@@ -139,7 +139,7 @@ module ISeq =
     open InlineShapeEnumeratorsImpl
     let inline iter f seq =
         let mutable enum = seq
-        while SEnumerator.moveNext &enum do
+        while SEnumerator.moveNext enum do
             SEnumerator.current enum |> f
 
     let inline ofArray array = { Array = array; Index = -1 }
@@ -160,7 +160,7 @@ module ISeq =
     let inline private minByImpl map (enum: 'a byref) =
         let mutable result = SEnumerator.current enum
         let mutable mapping = map result
-        while SEnumerator.moveNext &enum do
+        while SEnumerator.moveNext enum do
             let value = SEnumerator.current enum
             let comparable = map value
             if mapping > comparable then
@@ -170,14 +170,14 @@ module ISeq =
 
     let inline minBy map seq =
         let mutable enum = seq
-        if SEnumerator.moveNext &enum then
+        if SEnumerator.moveNext enum then
             minByImpl map &enum
         else
             invalidOp "Seq is empty"
 
     let inline tryMinBy map seq =
         let mutable enum = seq
-        if SEnumerator.moveNext &enum then
+        if SEnumerator.moveNext enum then
             minByImpl map &enum
             |> Some
         else
@@ -186,9 +186,35 @@ module ISeq =
     let inline toResizeArray seq =
         let mutable enum = seq
         let rsz = ResizeArray()
-        while SEnumerator.moveNext &enum do
+        while SEnumerator.moveNext enum do
             SEnumerator.current enum |> rsz.Add
         rsz
 
     let inline map2 map seq =
         { Enumerator = SEnumerator.getEnumerator seq; Map = map }
+
+    let inline fold initial folder seq =
+        let folder = OptimizedClosures.FSharpFunc<_,_,_>.Adapt folder
+        let mutable enum = SEnumerator.getEnumerator seq
+        let mutable result = initial
+        while SEnumerator.moveNext enum do
+            result <- folder.Invoke(result, SEnumerator.current enum)
+        result
+
+    [<AbstractClass>]
+    type ISeq2() =
+        static member inline FoldTupled(initial, folder, seq) =
+            let folder = OptimizedClosures.FSharpFunc<_,_,_>.Adapt folder
+            let mutable enum = SEnumerator.getEnumerator seq
+            let mutable result = initial
+            while SEnumerator.moveNext enum do
+                result <- folder.Invoke(result, SEnumerator.current enum)
+            result
+
+    let inline foldTupled (initial, folder, seq) =
+        let folder = OptimizedClosures.FSharpFunc<_,_,_>.Adapt folder
+        let mutable enum = SEnumerator.getEnumerator seq
+        let mutable result = initial
+        while SEnumerator.moveNext enum do
+            result <- folder.Invoke(result, SEnumerator.current enum)
+        result

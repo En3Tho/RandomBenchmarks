@@ -4,5 +4,5 @@ open FSharpBenchmarks.EnumeratorBenchmarks
 
 [<EntryPoint>]
 let main argv =
-    BenchmarkRunner.Run<EnumeratorBenchmarks.EnumeratorBenchmarks>() |> ignore
+    BenchmarkRunner.Run<EnumeratorFoldBenchmarks>() |> ignore
     0

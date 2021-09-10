@@ -4,14 +4,14 @@ open System.Collections.Generic
 open System.Runtime.CompilerServices
 
 module GenericEnumeratorsImpl =
-    type SEnum<'i, 'e when 'e: struct
+    type SStructEnumerator<'i, 'e when 'e: struct
                        and 'e :> IEnumerator<'i>> = 'e
 
     [<Struct; NoComparison; NoEquality>]
     type GSelectEnumerator<'i, 'res, 'e when 'e: struct
                                          and 'e :> IEnumerator<'i>> =
 
-        val mutable private enumerator: SEnum<'i, 'e>
+        val mutable private enumerator: SStructEnumerator<'i, 'e>
         val private map: 'i -> 'res
 
         new (map, enumerator) = { enumerator = enumerator; map = map; }
@@ -35,7 +35,7 @@ module GenericEnumeratorsImpl =
     type GWhereEnumerator<'i, 'e when 'e: struct
                                   and 'e :> IEnumerator<'i>> =
 
-        val mutable private enumerator: SEnum<'i, 'e>
+        val mutable private enumerator: SStructEnumerator<'i, 'e>
         val private filter: 'i -> bool
 
         new (filter, enumerator) = { enumerator = enumerator; filter = filter; }
@@ -91,8 +91,8 @@ module GSeq =
     open GenericEnumeratorsImpl
     let inline getEnumerator<'i, 'e, ^seq when 'e: struct
                                        and 'e :> IEnumerator<'i>
-                                       and ^seq: (member GetEnumerator: unit -> SEnum<'i, 'e>)> (seq: ^seq) =
-        (^seq: (member GetEnumerator: unit ->  SEnum<'i, 'e>) seq)
+                                       and ^seq: (member GetEnumerator: unit -> SStructEnumerator<'i, 'e>)> (seq: ^seq) =
+        (^seq: (member GetEnumerator: unit ->  SStructEnumerator<'i, 'e>) seq)
 
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     let ofArray array = new ArrayEnumerator<_>(array)
@@ -104,7 +104,36 @@ module GSeq =
     let map map enum = new GSelectEnumerator<_,_,_>(map, enum)
 
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
-    let iter action (enum: SEnum<'i,'e>) =
+    let iter action (enum: SStructEnumerator<'i,'e>) =
         let mutable enum = enum
         while enum.MoveNext() do
             action enum.Current
+
+    [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+    let fold initial folder (enumerator: SStructEnumerator<'i,'e>) =
+        let folder = OptimizedClosures.FSharpFunc<_,_,_>.Adapt folder
+        let mutable enumerator = enumerator
+        let mutable result = initial
+        while enumerator.MoveNext() do
+            result <- folder.Invoke(result, enumerator.Current)
+        result
+
+    [<AbstractClass>]
+    type GSeq2() =
+        [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+        static member FoldTupled(initial, folder, enumerator: SStructEnumerator<'i,'e>) =
+            let folder = OptimizedClosures.FSharpFunc<_,_,_>.Adapt folder
+            let mutable enumerator = enumerator
+            let mutable result = initial
+            while enumerator.MoveNext() do
+                result <- folder.Invoke(result, enumerator.Current)
+            result
+
+    [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+    let FoldTupled (initial, folder, enumerator: SStructEnumerator<'i,'e>) =
+        let folder = OptimizedClosures.FSharpFunc<_,_,_>.Adapt folder
+        let mutable enumerator = enumerator
+        let mutable result = initial
+        while enumerator.MoveNext() do
+            result <- folder.Invoke(result, enumerator.Current)
+        result

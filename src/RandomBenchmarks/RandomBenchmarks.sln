@@ -9,6 +9,8 @@ ProjectSection(SolutionItems) = preProject
 	global.json = global.json
 EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lib.CSharp", "Lib.CSharp\Lib.CSharp.csproj", "{8FA26B73-129D-4938-BCD0-374F10113DCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,5 +25,9 @@ Global
 		{D3FF5173-5197-4152-9D16-D29D717E9765}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3FF5173-5197-4152-9D16-D29D717E9765}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3FF5173-5197-4152-9D16-D29D717E9765}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FA26B73-129D-4938-BCD0-374F10113DCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FA26B73-129D-4938-BCD0-374F10113DCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FA26B73-129D-4938-BCD0-374F10113DCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FA26B73-129D-4938-BCD0-374F10113DCD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

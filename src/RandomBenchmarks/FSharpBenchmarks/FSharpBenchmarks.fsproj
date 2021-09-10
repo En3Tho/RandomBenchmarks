@@ -7,16 +7,19 @@
 
     <ItemGroup>
         <Compile Include="EnumeratorBenchmarks.fs" />
+        <Compile Include="EnumeratorFoldBenchmarks.fs" />
         <Compile Include="NestedFuncCodeGenBenchmark.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Lib.CSharp\Lib.CSharp.csproj" />
       <ProjectReference Include="..\Lib.FSharp\Lib.FSharp.fsproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="BenchmarkDotNet" Version="0.13.0" />
+      <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+      <PackageReference Update="FSharp.Core" Version="5.0.2" />
     </ItemGroup>
 
 </Project>
