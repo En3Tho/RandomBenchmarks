@@ -8,7 +8,9 @@
     <ItemGroup>
         <Compile Include="EnumeratorBenchmarks.fs" />
         <Compile Include="EnumeratorFoldBenchmarks.fs" />
+        <Compile Include="EnumeratorFoldMinimumRepro.fs" />
         <Compile Include="NestedFuncCodeGenBenchmark.fs" />
+        <Compile Include="UnexpectedTailCalls.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 

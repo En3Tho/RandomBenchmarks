@@ -79,3 +79,9 @@ type EnumeratorFoldBenchmarks() =
         this.List
         |> GSeq.getEnumerator
         |> fun x -> GSeqCSharp.Fold(0, (fun x y -> x + y), x)
+
+    [<Benchmark>]
+    member this.ArrayCSharpFold() =
+        this.Array
+        |> GSeq.ofArray
+        |> fun x -> GSeqCSharp.Fold(0, (fun x y -> x + y), x)
